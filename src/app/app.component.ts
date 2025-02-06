@@ -1,4 +1,4 @@
-import { Component, inject, model, signal, Signal } from '@angular/core';
+import { Component, inject, model, OnInit, signal, Signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import {MatButtonModule} from '@angular/material/button';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -44,21 +44,21 @@ interface Todo {
     MatDialogModule,
   ],
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'todo';
+
   readonly dialog = inject(MatDialog);
-  openDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {
-    this.dialog.open(ConfirmationComponent, {
-      width: '250px',
-      enterAnimationDuration,
-      exitAnimationDuration,
-    });
-  }
+
   todoList: Signal<Todo[]> = signal([]);
 
   description = model('');
 
   selectedIndex: number = -1;
+
+  ngOnInit(): void {
+    const storageValue = localStorage.getItem('todoList');
+    this.todoList = signal(storageValue ? JSON.parse(storageValue) : []);    
+  }
 
   save() {
     const obj: Todo = {
@@ -68,6 +68,7 @@ export class AppComponent {
     }
     this.todoList().push(obj)
     this.description.set('');
+    localStorage.setItem('todoList', JSON.stringify(this.todoList()));
   }
   updateItem() {
     if (this.selectedIndex >= 0) {
@@ -75,9 +76,12 @@ export class AppComponent {
       this.description.set('');
       this.selectedIndex = -1;
     }
+    localStorage.setItem('todoList', JSON.stringify(this.todoList()));
+
   }
   checkmarkChanged(data: Todo) {
-    data.done = !data.done
+    data.done = !data.done;
+    localStorage.setItem('todoList', JSON.stringify(this.todoList()));
   }
   deleteConfirmation(index: number) {
     this.dialog.open(ConfirmationComponent, {
@@ -85,6 +89,7 @@ export class AppComponent {
     }).afterClosed().subscribe((res: any) => {
       if (res === 'Yes') {
         this.todoList().splice(index, 1)
+        localStorage.setItem('todoList', JSON.stringify(this.todoList()));
       }
     });
   }

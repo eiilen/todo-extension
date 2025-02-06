@@ -24,8 +24,8 @@
         @for (item of todoList(); track item.id; let i = $index) {
           <div class="listing">
             <div>
-              <mat-checkbox (click)="checkmarkChanged(item)" [disabled]="selectedIndex == i">
-                <span [ngClass]="item.done ? 'crossover' : ''">{{item.description}}</span>
+              <mat-checkbox [checked]="item.done" (change)="checkmarkChanged(item)" [disabled]="selectedIndex == i">
+                <span [ngClass]="{'crossover': item.done}">{{item.description}}</span>
               </mat-checkbox>
             </div>
             @if (selectedIndex != i) {
